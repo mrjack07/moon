@@ -7,14 +7,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm install          # deps
 npm run dev          # Vite dev server with HMR
-npm run build        # tsc -b && vite build  → dist/  (the real correctness gate)
+npm run build        # tsc -b && vite build  → dist/
+npm test             # node --test  (auto-discovers test/*.test.ts)
 npm run lint         # eslint . — see "Lint baseline" below; it FAILS on a clean checkout
 npm run preview      # serve the production build
+
+node --test test/moonPhase.test.ts        # a single file
+node --test --test-name-pattern='epoch'   # a single test
 ```
 
-**There is no test setup** — no runner, no test files, no `test` script. `npm run build`
-(which type-checks with `tsc -b` first) is the only automated verification available.
-Don't invent a test command; if tests are wanted, a runner has to be added first.
+### Tests
+
+[test/moonPhase.test.ts](test/moonPhase.test.ts) covers
+[src/lib/moonPhase.ts](src/lib/moonPhase.ts) — the only module with logic worth pinning.
+**No test dependencies**: Node's built-in runner executes the TypeScript directly via native
+type stripping, which works because `erasableSyntaxOnly` already forbids any syntax that
+would need real compilation. Import source files with an explicit `.ts` extension, as the
+suite does; Node's stripper will not resolve extensionless specifiers.
+
+`tsconfig.test.json` is a third project referenced from `tsconfig.json`, so `tsc -b` — and
+therefore `npm run build` — type-checks the suite too. It carries `types: ["node"]`, which
+`tsconfig.app.json` deliberately does not.
+
+Two conventions in that suite worth keeping:
+
+- The cycle length and epoch are **re-declared** in the test rather than imported. Importing
+  them would make the tests agree with any change to the model by construction; duplicating
+  them means a change to either constant fails loudly.
+- The "pinned output" test is a *characterization* test — it locks the model's own numbers,
+  not astronomical truth. `calculateMoonPhase` uses the mean synodic month and drifts hours
+  from real ephemerides; don't tighten that test into an accuracy claim without a real
+  ephemeris source.
 
 ### Lint baseline (important)
 
