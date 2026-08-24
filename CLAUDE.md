@@ -18,14 +18,14 @@ Don't invent a test command; if tests are wanted, a runner has to be added first
 
 ### Lint baseline (important)
 
-`npm run lint` reports **16 pre-existing errors** on an untouched checkout. Do not treat a
+`npm run lint` reports **4 pre-existing errors** on an untouched checkout. Do not treat a
 red lint as something you broke — diff against this baseline:
 
-- 14 of them live in the vendored `src/components/ui/**` shadcn files
-  (`react-refresh/only-export-components`, `react-hooks/purity` in `sidebar.tsx`).
-- 2 are app-owned: [App.tsx:77](src/App.tsx:77) (`Math.random` during render, the star
-  field) and [MoonDisplay.tsx:16](src/components/MoonDisplay.tsx:16) (`setState`
-  synchronously in an effect, the phase-change animation).
+- `react-hooks/set-state-in-effect` at [App.tsx:31](src/App.tsx:31) (derived state written
+  from an effect — see "State and data flow") and
+  [MoonDisplay.tsx:16](src/components/MoonDisplay.tsx:16) (the phase-change animation).
+- `react-refresh/only-export-components` at [button.tsx:62](src/components/ui/button.tsx:62)
+  (`buttonVariants`) and [useLanguage.tsx:21](src/hooks/useLanguage.tsx:21) (`useLanguage`).
 
 ## Architecture
 
@@ -33,8 +33,13 @@ A single-screen moon-phase viewer. React 19 + Vite 7 + TypeScript + Tailwind v3 
 shadcn/ui (`new-york` style, `slate` base). **No router, no backend, no data fetching, no
 persistence** — every value on screen is derived synchronously from a `Date`.
 
-Only six files hold the actual app; everything under `src/components/ui/` is vendored
-shadcn boilerplate (~55 components) of which **only `button` is imported** by app code.
+The whole app is 10 reachable modules. `src/components/ui/` once held 53 vendored shadcn
+components; the 52 that nothing imported were deleted, so **only `button.tsx` remains**.
+
+`package.json` is pruned to exactly the transitive closure of what `src/main.tsx` reaches —
+7 runtime dependencies. **Adding a shadcn component means adding its Radix dependency by
+hand**, since it is no longer already installed. `npx shadcn@latest add <name>` handles that,
+but see the `components.json` trap below.
 
 ### State and data flow
 
@@ -110,5 +115,8 @@ right while waxing, left while waning). No images, canvas, or SVG. The star fiel
   `kimi-plugin-inspect-react` plugin, which injects source-location attributes into JSX.
 - [src/App.css](src/App.css) is dead Vite-template leftover — imported by nothing. Global
   styles live in `src/index.css`.
+- `tailwind.config.js` still carries config for components that no longer exist: the
+  `sidebar` color group and the `accordion-*` / `caret-blink` keyframes, plus the
+  `tailwindcss-animate` plugin that nothing currently uses.
 - [README.md](README.md) is the stock Vite template readme, and [info.md](info.md) is the
   scaffold's component inventory. Neither documents this app; don't cite them as project docs.
