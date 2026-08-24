@@ -8,6 +8,16 @@ import { Button } from '@/components/ui/button';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/lib/i18n';
 
+// Generated once at module load so the star field stays put across re-renders
+const STARS = Array.from({ length: 50 }, () => ({
+  width: Math.random() * 2 + 1 + 'px',
+  height: Math.random() * 2 + 1 + 'px',
+  left: Math.random() * 100 + '%',
+  top: Math.random() * 100 + '%',
+  opacity: Math.random() * 0.5 + 0.2,
+  animation: `twinkle ${Math.random() * 3 + 2}s infinite`
+}));
+
 function AppContent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentPhase, setCurrentPhase] = useState<PhaseInfo | null>(null);
@@ -69,18 +79,11 @@ function AppContent() {
         }}
       >
         {/* Random stars */}
-        {[...Array(50)].map((_, i) => (
+        {STARS.map((star, i) => (
           <div
             key={i}
             className="absolute rounded-full bg-white"
-            style={{
-              width: Math.random() * 2 + 1 + 'px',
-              height: Math.random() * 2 + 1 + 'px',
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              opacity: Math.random() * 0.5 + 0.2,
-              animation: `twinkle ${Math.random() * 3 + 2}s infinite`
-            }}
+            style={star}
           />
         ))}
       </div>

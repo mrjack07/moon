@@ -48,7 +48,7 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
                 key={index}
                 onClick={() => onSelectPhase(phase)}
                 className={cn(
-                  'flex-shrink-0 flex flex-col items-center gap-2 px-3 py-3 rounded-xl',
+                  'relative flex-shrink-0 flex flex-col items-center gap-2 px-3 py-3 rounded-xl',
                   'transition-all duration-300 ease-out',
                   'hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20',
                   selected 
