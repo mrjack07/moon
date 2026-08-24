@@ -20,7 +20,7 @@ export interface PhaseInfo {
 
 // Known new moon date (January 6, 2000)
 const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z');
-const LUNAR_CYCLE = 29.53058867; // days
+export const LUNAR_CYCLE = 29.53058867; // days
 
 export function calculateMoonPhase(date: Date = new Date()): PhaseInfo {
   // Calculate days since known new moon
@@ -106,4 +106,31 @@ export function formatFullDate(date: Date, locale: string = 'en-US'): string {
     month: 'long', 
     day: 'numeric' 
   });
+}
+
+/**
+ * The shadowed part of the moon's disk, as an SVG path on a 100×100 viewBox.
+ *
+ * Seen from Earth the terminator is not a straight edge. It is a great circle
+ * projected onto a disk, which draws a half-ellipse whose horizontal semi-axis
+ * is `R·|2k − 1|` for an illuminated fraction `k`. It flattens into a straight
+ * line only at the two quarters, bulges into the lit half while crescent, and
+ * into the dark half while gibbous — which is what gives a crescent its horns.
+ *
+ * `waxing` puts the shadow on the correct side: by the northern-hemisphere
+ * convention a waxing moon is lit on its right, matching the 🌒🌓🌔 emoji the
+ * rest of the UI shows.
+ */
+export function shadowPath(illumination: number, waxing: boolean): string {
+  const R = 50;
+  const k = Math.min(Math.max(illumination / 100, 0), 1);
+  const rx = R * Math.abs(2 * k - 1);
+  const gibbous = k > 0.5;
+
+  // SVG sweep flags run in the direction of increasing angle, which reads as
+  // clockwise on screen because y points down.
+  const limbSweep = waxing ? 0 : 1;                          // trace the limb down the dark side
+  const termSweep = waxing === gibbous ? 1 : 0;              // bulge away from the shadow when gibbous
+
+  return `M 50 0 A ${R} ${R} 0 0 ${limbSweep} 50 100 A ${rx} ${R} 0 0 ${termSweep} 50 0 Z`;
 }

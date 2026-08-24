@@ -117,11 +117,23 @@ one in use is worked around explicitly — `<Button variant="ghost">` plus
 `text-white/70 hover:bg-white/10` overrides. Either follow that pattern or wire up the dark
 class properly; don't assume `bg-background` will do the right thing.
 
-The moon itself is pure CSS — stacked `radial-gradient` layers (maria, large/medium/small/
-micro craters, ridges) inside a `rounded-full` container, with the phase terminator drawn as
-a `linear-gradient` hard stop whose direction flips at `age/cycle === 0.5` (shadow on the
-right while waxing, left while waning). No images, canvas, or SVG. The star field and its
+The moon's surface is pure CSS — stacked `radial-gradient` layers (maria, large/medium/
+small/micro craters, ridges) inside a `rounded-full` container. The star field and its
 `twinkle` keyframes are generated inline in `App.tsx`.
+
+The **phase shadow is the one exception**: an inline `<svg>` overlay whose path comes from
+`shadowPath` in [moonPhase.ts](src/lib/moonPhase.ts). The terminator is a great circle
+projected onto a disc, so it draws a half-ellipse of horizontal semi-axis `R·|2k − 1|` —
+straight only at the quarters, bulging into the lit half while crescent (which is what
+makes the horns) and into the dark half while gibbous. A `linear-gradient` cannot express
+that curve, which is why this one piece is SVG. `shadowPath` also owns the **orientation**:
+waxing is lit on its right, matching the 🌒🌓🌔 emoji the timeline shows.
+
+Its geometry is covered in [test/moonPhase.test.ts](test/moonPhase.test.ts) by rebuilding
+the path with the SVG spec's own endpoint-to-centre arc conversion and measuring the
+enclosed area, which must equal `1 − illumination`. Those tests are what stop a flipped
+sweep flag or a mirrored shadow from shipping — verify any change to `shadowPath` against
+them rather than by eye.
 
 ### Accessibility rules this UI already follows
 

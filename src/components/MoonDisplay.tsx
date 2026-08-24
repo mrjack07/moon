@@ -1,8 +1,7 @@
-import type { PhaseInfo } from '@/lib/moonPhase';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t, getPhaseName } from '@/lib/i18n';
-import { formatFullDate } from '@/lib/moonPhase';
+import { formatFullDate, shadowPath, LUNAR_CYCLE, type PhaseInfo } from '@/lib/moonPhase';
 
 interface MoonDisplayProps {
   phaseInfo: PhaseInfo;
@@ -18,31 +17,8 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
     return () => clearTimeout(timer);
   }, [phaseInfo.phase]);
 
-  // Calculate shadow position based on moon age
-  const getShadowStyle = () => {
-    const { age } = phaseInfo;
-    const cycle = 29.53058867;
-    const progress = age / cycle;
-    
-    // Determine shadow based on phase
-    if (progress < 0.5) {
-      // Waxing (growing) - shadow on right
-      const shadowWidth = (0.5 - progress) * 2 * 100;
-      return {
-        background: `linear-gradient(to left, 
-          rgba(0, 0, 0, 0.88) ${shadowWidth}%, 
-          transparent ${shadowWidth}%)`
-      };
-    } else {
-      // Waning (shrinking) - shadow on left
-      const shadowWidth = (progress - 0.5) * 2 * 100;
-      return {
-        background: `linear-gradient(to right, 
-          rgba(0, 0, 0, 0.88) ${shadowWidth}%, 
-          transparent ${shadowWidth}%)`
-      };
-    }
-  };
+  // First half of the cycle the moon is filling out, and is lit on its right.
+  const waxing = phaseInfo.age < LUNAR_CYCLE / 2;
 
   const locale = language === 'es' ? 'es-ES' : 'en-US';
 
@@ -244,11 +220,16 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
           }}
         />
         
-        {/* Phase shadow overlay */}
-        <div 
-          className="absolute inset-0 transition-all duration-500"
-          style={getShadowStyle()}
-        />
+        {/* Phase shadow. The terminator is a great circle projected onto a
+            disk, so it is a half-ellipse — a straight edge only at the
+            quarters. See shadowPath in lib/moonPhase.ts. */}
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full"
+        >
+          <path d={shadowPath(phaseInfo.illumination, waxing)} fill="rgba(0, 0, 0, 0.88)" />
+        </svg>
         
         {/* Inner glow for depth */}
         <div 
