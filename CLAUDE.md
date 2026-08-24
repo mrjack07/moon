@@ -18,11 +18,10 @@ Don't invent a test command; if tests are wanted, a runner has to be added first
 
 ### Lint baseline (important)
 
-`npm run lint` reports **4 pre-existing errors** on an untouched checkout. Do not treat a
+`npm run lint` reports **3 pre-existing errors** on an untouched checkout. Do not treat a
 red lint as something you broke — diff against this baseline:
 
-- `react-hooks/set-state-in-effect` at [App.tsx:31](src/App.tsx:31) (derived state written
-  from an effect — see "State and data flow") and
+- `react-hooks/set-state-in-effect` at
   [MoonDisplay.tsx:16](src/components/MoonDisplay.tsx:16) (the phase-change animation).
 - `react-refresh/only-export-components` at [button.tsx:62](src/components/ui/button.tsx:62)
   (`buttonVariants`) and [useLanguage.tsx:21](src/hooks/useLanguage.tsx:21) (`useLanguage`).
@@ -43,11 +42,14 @@ but see the `components.json` trap below.
 
 ### State and data flow
 
-[src/App.tsx](src/App.tsx) owns a single source of truth, `selectedDate`. Everything else
-is derived from it in one effect: `calculateMoonPhase(selectedDate)` → the big display,
-`getTimelinePhases(selectedDate)` → the ±4-day strip, and a `toDateString()` comparison →
-`isCurrentDate` (which gates the Reset button). Clicking a timeline entry just sets
-`selectedDate`. A 60s interval re-sets `selectedDate` to `new Date()` **only while the
+[src/App.tsx](src/App.tsx) owns a single source of truth, `selectedDate`, and **everything
+else is derived during render, not stored**: `calculateMoonPhase(selectedDate)` → the big
+display, `getTimelinePhases(selectedDate)` → the ±4-day strip (both memoized on
+`selectedDate`), and a `toDateString()` comparison → `isCurrentDate` (which gates the Reset
+button). Keep it that way — an earlier version held all three in `useState` and filled them
+from an effect, which cost an extra render per date change and forced a `"Loading..."`
+branch for the first paint, when nothing is actually async here. Clicking a timeline entry
+just sets `selectedDate`. A 60s interval re-sets `selectedDate` to `new Date()` **only while the
 selection is still today**, so "Today" stays accurate without fighting a manual selection.
 
 ### Moon math — [src/lib/moonPhase.ts](src/lib/moonPhase.ts)

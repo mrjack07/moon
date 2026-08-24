@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { MoonDisplay } from '@/components/MoonDisplay';
 import { Timeline } from '@/components/Timeline';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -20,21 +20,12 @@ const STARS = Array.from({ length: 50 }, () => ({
 
 function AppContent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [currentPhase, setCurrentPhase] = useState<PhaseInfo | null>(null);
-  const [timelinePhases, setTimelinePhases] = useState<PhaseInfo[]>([]);
-  const [isCurrentDate, setIsCurrentDate] = useState(true);
   const { language } = useLanguage();
 
-  // Update phases when selected date changes
-  useEffect(() => {
-    const phase = calculateMoonPhase(selectedDate);
-    setCurrentPhase(phase);
-    setTimelinePhases(getTimelinePhases(selectedDate));
-    
-    // Check if selected date is today
-    const today = new Date();
-    setIsCurrentDate(selectedDate.toDateString() === today.toDateString());
-  }, [selectedDate]);
+  // Everything on screen is a pure function of the selected date
+  const currentPhase = useMemo(() => calculateMoonPhase(selectedDate), [selectedDate]);
+  const timelinePhases = useMemo(() => getTimelinePhases(selectedDate), [selectedDate]);
+  const isCurrentDate = selectedDate.toDateString() === new Date().toDateString();
 
   // Handle phase selection from timeline
   const handleSelectPhase = useCallback((phase: PhaseInfo) => {
@@ -57,14 +48,6 @@ function AppContent() {
     
     return () => clearInterval(interval);
   }, [selectedDate]);
-
-  if (!currentPhase) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-white/50">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
