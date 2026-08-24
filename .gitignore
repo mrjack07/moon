@@ -29,6 +29,10 @@ pnpm-debug.log*
 # OS files
 .DS_Store
 
+# Claude Code: launch.json se versiona (define el dev server para el preview),
+# pero los ajustes locales de cada maquina no.
+.claude/settings.local.json
+
 # Editors/IDEs
 .idea/
 .vscode/*

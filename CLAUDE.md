@@ -187,6 +187,9 @@ There is no automated a11y check in the gates — these are conventions, not enf
 - [vite.config.ts](vite.config.ts) sets `base: './'` (relative asset URLs, so `dist/` can be
   served from any subpath) and runs `inspectAttr()` from the third-party
   `kimi-plugin-inspect-react` plugin, which injects source-location attributes into JSX.
+- [.claude/launch.json](.claude/launch.json) declares the dev server for the preview tools
+  (`npm run dev` on Vite's default port 5173, since `vite.config.ts` sets none). Start the
+  server through those tools, never through a raw shell command.
 - [src/App.css](src/App.css) is dead Vite-template leftover — imported by nothing. Global
   styles live in `src/index.css`.
 - `tailwind.config.js` still carries config for components that no longer exist: the
