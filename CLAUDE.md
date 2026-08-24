@@ -123,6 +123,32 @@ a `linear-gradient` hard stop whose direction flips at `age/cycle === 0.5` (shad
 right while waxing, left while waning). No images, canvas, or SVG. The star field and its
 `twinkle` keyframes are generated inline in `App.tsx`.
 
+### Accessibility rules this UI already follows
+
+The palette is white-at-N%-opacity over `#0a0a0f`, so contrast is a direct function of that
+number. **`text-white/50` is the floor** — it lands at 5.33:1, and `/40` (3.77:1) and `/30`
+(2.62:1) both fail WCAG AA for the small type this app uses. Same for focus rings:
+`ring-white/70` clears the 3:1 required of non-text indicators, `ring-white/20` does not.
+
+The visuals carry no information that the text does not: the CSS moon, the phase emoji, the
+star field and the amber "today" dot are all `aria-hidden="true"`, because the heading, the
+date line and the illumination readout already state the phase. Keep new decoration hidden
+the same way rather than describing it twice.
+
+Both button groups need explicit names, since their visible labels are unreliable: the
+timeline shows only `"Aug 24"` plus an emoji, and the language switcher drops its country
+code below the `sm` breakpoint — leaving a bare flag emoji as the only content. Both carry
+`aria-label`, `aria-pressed`, and `aria-current="date"` for today.
+
+[useLanguage.tsx](src/hooks/useLanguage.tsx) syncs `document.documentElement.lang` and
+`document.title` on every language change. Without the former a screen reader reads Spanish
+copy with English pronunciation, so any new language must go through that provider.
+
+`src/index.css` neutralises animations under `prefers-reduced-motion: reduce`. All motion
+here is decorative, so nothing needs an exception.
+
+There is no automated a11y check in the gates — these are conventions, not enforced rules.
+
 ## Project conventions & traps
 
 - `@/` → `./src`, declared **twice**: [vite.config.ts](vite.config.ts) and

@@ -1,4 +1,4 @@
-import { formatDate, type PhaseInfo } from '@/lib/moonPhase';
+import { formatDate, formatFullDate, type PhaseInfo } from '@/lib/moonPhase';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t, getPhaseName } from '@/lib/i18n';
@@ -32,6 +32,8 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
         
         {/* Scrollable timeline */}
         <div 
+          role="group"
+          aria-label={t('a11y.timeline', language)}
           className="flex overflow-x-auto pb-4 pt-2 px-4 gap-3 scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
@@ -47,10 +49,15 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
               <button
                 key={index}
                 onClick={() => onSelectPhase(phase)}
+                // The visible label is a bare "Aug 24" (or "Today") plus an emoji;
+                // spell the whole thing out for anyone who cannot see the column.
+                aria-label={`${formatFullDate(phase.date, locale)}, ${getPhaseName(phase.phase, language)}`}
+                aria-pressed={selected}
+                aria-current={today ? 'date' : undefined}
                 className={cn(
                   'relative flex-shrink-0 flex flex-col items-center gap-2 px-3 py-3 rounded-xl',
                   'transition-all duration-300 ease-out',
-                  'hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20',
+                  'hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70',
                   selected 
                     ? 'bg-white/15 scale-110 shadow-lg shadow-white/5' 
                     : 'bg-white/5 scale-100',
@@ -70,6 +77,7 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
                 
                 {/* Moon icon */}
                 <div 
+                  aria-hidden="true"
                   className={cn(
                     'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center',
                     'transition-all duration-300',
@@ -86,7 +94,7 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
                   className={cn(
                     'text-[10px] sm:text-xs text-center max-w-[70px] sm:max-w-[80px]',
                     'truncate transition-colors',
-                    selected ? 'text-white/80' : 'text-white/40'
+                    selected ? 'text-white/80' : 'text-white/60'
                   )}
                 >
                   {getPhaseName(phase.phase, language)}
@@ -94,7 +102,7 @@ export function Timeline({ phases, selectedDate, onSelectPhase }: TimelineProps)
                 
                 {/* Today indicator dot */}
                 {today && (
-                  <div className="absolute -top-1 w-2 h-2 rounded-full bg-amber-400/80" />
+                  <div aria-hidden="true" className="absolute -top-1 w-2 h-2 rounded-full bg-amber-400/80" />
                 )}
               </button>
             );

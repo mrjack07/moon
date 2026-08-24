@@ -53,6 +53,7 @@ function AppContent() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       {/* Background stars effect */}
       <div 
+        aria-hidden="true"
         className="fixed inset-0 pointer-events-none"
         style={{
           background: `
@@ -74,7 +75,7 @@ function AppContent() {
       {/* Header with reset button and language switcher */}
       <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4">
         <div className="flex items-center gap-2">
-          <span className="text-xl sm:text-2xl">🌙</span>
+          <span className="text-xl sm:text-2xl" aria-hidden="true">🌙</span>
           <h1 className="text-lg sm:text-xl font-light text-white/80 tracking-wide">
             {t('app.title', language)}
           </h1>
@@ -94,7 +95,7 @@ function AppContent() {
               text-sm sm:text-base
             `}
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">{t('app.reset', language)}</span>
             <span className="sm:hidden">{t('app.reset.short', language)}</span>
           </Button>
@@ -119,7 +120,7 @@ function AppContent() {
 
         {/* Footer info */}
         <div className="px-4 pb-6 text-center">
-          <p className="text-white/30 text-xs sm:text-sm">
+          <p className="text-white/50 text-xs sm:text-sm">
             {t('app.footer.hint', language)}
           </p>
         </div>

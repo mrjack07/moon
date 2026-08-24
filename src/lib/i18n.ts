@@ -6,6 +6,9 @@ interface Translations {
 
 const en: Translations = {
   'app.title': 'Moon Phase',
+  'app.documentTitle': 'Moon Phase Tracker',
+  'a11y.language': 'Language',
+  'a11y.timeline': 'Moon phase timeline',
   'app.reset': 'Reset to Today',
   'app.reset.short': 'Reset',
   'app.footer.hint': 'Click on any date in the timeline to view that moon phase',
@@ -23,6 +26,9 @@ const en: Translations = {
 
 const es: Translations = {
   'app.title': 'Fase Lunar',
+  'app.documentTitle': 'Rastreador de Fases Lunares',
+  'a11y.language': 'Idioma',
+  'a11y.timeline': 'Línea de tiempo de fases lunares',
   'app.reset': 'Volver a Hoy',
   'app.reset.short': 'Reiniciar',
   'app.footer.hint': 'Haz clic en cualquier fecha de la línea de tiempo para ver esa fase lunar',

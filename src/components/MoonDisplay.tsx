@@ -48,8 +48,10 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      {/* Moon Container */}
+      {/* Moon Container — purely decorative: the heading, date and readout
+          below already state the phase, so announcing it twice adds nothing */}
       <div 
+        aria-hidden="true"
         className={`
           relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 
           rounded-full overflow-hidden
@@ -285,9 +287,9 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
       </p>
       
       {/* Illumination percentage */}
-      <div className="mt-4 flex items-center gap-2 text-white/40 text-sm">
+      <div className="mt-4 flex items-center gap-2 text-white/60 text-sm">
         <span>{t('moon.illumination', language)}:</span>
-        <span className="text-white/60 font-medium">
+        <span className="text-white/90 font-medium">
           {phaseInfo.illumination.toFixed(1)}%
         </span>
       </div>
