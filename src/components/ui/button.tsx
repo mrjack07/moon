@@ -59,4 +59,8 @@ function Button({
   )
 }
 
+// shadcn ships buttonVariants alongside Button by design. The rule is about
+// fast refresh granularity, not correctness, and splitting the file would put
+// this component out of step with upstream.
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

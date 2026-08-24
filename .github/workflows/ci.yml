@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Superseded runs on the same ref carry no information.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The suite runs TypeScript through Node's native type stripping, so the
+      # runtime has to be new enough to have it unflagged (22.18+ / 24+).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # All three gates run even if an earlier one fails: one red push should
+      # report every problem at once, not just the first.
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        if: ${{ !cancelled() }}
+        run: npm test
+
+      - name: Type-check and build
+        if: ${{ !cancelled() }}
+        run: npm run build

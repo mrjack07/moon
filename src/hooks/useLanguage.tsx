@@ -25,6 +25,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// A context hook belongs next to the provider it reads. Splitting them into two
+// files would satisfy fast refresh's file-granularity heuristic and nothing else.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {

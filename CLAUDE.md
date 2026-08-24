@@ -9,7 +9,7 @@ npm install          # deps
 npm run dev          # Vite dev server with HMR
 npm run build        # tsc -b && vite build  → dist/
 npm test             # node --test  (auto-discovers test/*.test.ts)
-npm run lint         # eslint . — see "Lint baseline" below; it FAILS on a clean checkout
+npm run lint         # eslint . — clean; see "The three gates" below
 npm run preview      # serve the production build
 
 node --test test/moonPhase.test.ts        # a single file
@@ -39,15 +39,23 @@ Two conventions in that suite worth keeping:
   from real ephemerides; don't tighten that test into an accuracy claim without a real
   ephemeris source.
 
-### Lint baseline (important)
+### The three gates
 
-`npm run lint` reports **3 pre-existing errors** on an untouched checkout. Do not treat a
-red lint as something you broke — diff against this baseline:
+`npm run lint`, `npm test` and `npm run build` all pass on a clean checkout, and
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs the three of them on every push to
+`main` and on every pull request. **There is no tolerated baseline of failures** — anything
+red is something the change introduced. Keep it that way; a gate that is always red stops
+being read.
 
-- `react-hooks/set-state-in-effect` at
-  [MoonDisplay.tsx:16](src/components/MoonDisplay.tsx:16) (the phase-change animation).
-- `react-refresh/only-export-components` at [button.tsx:62](src/components/ui/button.tsx:62)
-  (`buttonVariants`) and [useLanguage.tsx:21](src/hooks/useLanguage.tsx:21) (`useLanguage`).
+CI pins Node 24. The suite needs native TypeScript type stripping, which is unflagged from
+Node 22.18 and 24 onward — Node 20 will not run it.
+
+Two `eslint-disable` directives exist, both for `react-refresh/only-export-components`, both
+with the reasoning written at the call site: `buttonVariants` exported next to `Button` in
+[button.tsx](src/components/ui/button.tsx) (that is how shadcn ships it upstream) and
+`useLanguage` exported next to its provider in [useLanguage.tsx](src/hooks/useLanguage.tsx).
+The rule governs fast-refresh granularity, not correctness. Prefer fixing a new violation
+over adding a third directive.
 
 ## Architecture
 
@@ -157,7 +165,10 @@ code below the `sm` breakpoint — leaving a bare flag emoji as the only content
 copy with English pronunciation, so any new language must go through that provider.
 
 `src/index.css` neutralises animations under `prefers-reduced-motion: reduce`. All motion
-here is decorative, so nothing needs an exception.
+here is decorative, so nothing needs an exception. The phase-change animation on the moon
+and its heading is replayed by **remounting** them — a React `key` on the phase name — with
+the keyframes in `index.css`, rather than by an effect toggling state on a timer. Reach for
+the same trick before writing another one.
 
 There is no automated a11y check in the gates — these are conventions, not enforced rules.
 

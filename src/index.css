@@ -111,3 +111,23 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Phase-change animations. Replayed by remounting the element (React `key` on the
+   phase name) rather than by an effect toggling state on a timer. */
+@keyframes phase-in {
+  from { opacity: 0.8; transform: scale(0.95); }
+  to   { opacity: 1;   transform: scale(1); }
+}
+
+@keyframes phase-in-label {
+  from { opacity: 0.5; transform: translateY(0.5rem); }
+  to   { opacity: 1;   transform: translateY(0); }
+}
+
+.animate-phase-in {
+  animation: phase-in 300ms ease-out;
+}
+
+.animate-phase-in-label {
+  animation: phase-in-label 300ms ease-out;
+}

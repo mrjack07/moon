@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { t, getPhaseName } from '@/lib/i18n';
 import { formatFullDate, shadowPath, LUNAR_CYCLE, type PhaseInfo } from '@/lib/moonPhase';
@@ -8,14 +7,7 @@ interface MoonDisplayProps {
 }
 
 export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
   const { language } = useLanguage();
-  
-  useEffect(() => {
-    setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 300);
-    return () => clearTimeout(timer);
-  }, [phaseInfo.phase]);
 
   // First half of the cycle the moon is filling out, and is lit on its right.
   const waxing = phaseInfo.age < LUNAR_CYCLE / 2;
@@ -27,13 +19,14 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
       {/* Moon Container — purely decorative: the heading, date and readout
           below already state the phase, so announcing it twice adds nothing */}
       <div 
+        // Remounting on a phase change replays the CSS animation below. Doing it
+        // this way keeps the effect-writes-state pattern out of the component.
+        key={phaseInfo.phase}
         aria-hidden="true"
-        className={`
+        className="
           relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 
-          rounded-full overflow-hidden
-          transition-all duration-300 ease-out
-          ${isAnimating ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
-        `}
+          rounded-full overflow-hidden animate-phase-in
+        "
         style={{
           boxShadow: `
             0 0 60px 20px rgba(200, 200, 220, 0.15),
@@ -253,11 +246,11 @@ export function MoonDisplay({ phaseInfo }: MoonDisplayProps) {
       
       {/* Phase Name */}
       <h2 
-        className={`
+        key={phaseInfo.phase}
+        className="
           mt-8 text-3xl sm:text-4xl md:text-5xl font-light text-white/90
-          tracking-wide transition-all duration-300
-          ${isAnimating ? 'opacity-50 translate-y-2' : 'opacity-100 translate-y-0'}
-        `}
+          tracking-wide animate-phase-in-label
+        "
       >
         {getPhaseName(phaseInfo.phase, language)}
       </h2>
