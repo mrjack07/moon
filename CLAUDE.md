@@ -98,14 +98,19 @@ UI; don't present it as astronomical precision.
 
 ### i18n — [src/lib/i18n.ts](src/lib/i18n.ts) + [src/hooks/useLanguage.tsx](src/hooks/useLanguage.tsx)
 
-Hand-rolled, not a library. `Language = 'en' | 'es'`; each language is a flat
-`Record<string, string>` of dotted keys, and `t(key, lang)` returns the key itself when a
-translation is missing (so a typo shows up as raw `app.footer.hint` on screen, not a crash).
-`getPhaseName` is just `t('phase.' + phase, lang)`, which is why `MoonPhase` union members
-double as translation-key suffixes.
+Hand-rolled, not a library. `Language = 'en' | 'es'`; each language is a flat map of dotted
+keys. **`en` carries no type annotation on purpose** — that is what lets `TranslationKey =
+keyof typeof en` infer the literal key set. Annotating it, or restoring an index signature,
+widens the keys back to `string` and silently gives up every check in the file. `es` is then
+declared as `Record<TranslationKey, string>`, so a missing, extra or misspelled key is a
+compile error rather than a raw dotted string on screen. There is no runtime fallback.
+
+`getPhaseName` is `t(\`phase.${phase}\`, lang)` typed on `MoonPhase`, which is why the union
+members double as translation-key suffixes — and why adding a phase without adding its
+`phase.*` string fails to compile.
 
 Conventions to follow:
-- **Every new user-facing string must be added to both `en` and `es`** — there is no fallback chain.
+- **Every new user-facing string must be added to both `en` and `es`** — `tsc` enforces it.
 - Language lives in React context only: in-memory, defaults to `'en'`, **not persisted and
   not sniffed from the browser locale**. It resets on reload by design.
 - Date formatting maps language → BCP-47 at each call site (`language === 'es' ? 'es-ES' :
@@ -190,10 +195,10 @@ There is no automated a11y check in the gates — these are conventions, not enf
 - [.claude/launch.json](.claude/launch.json) declares the dev server for the preview tools
   (`npm run dev` on Vite's default port 5173, since `vite.config.ts` sets none). Start the
   server through those tools, never through a raw shell command.
-- [src/App.css](src/App.css) is dead Vite-template leftover — imported by nothing. Global
-  styles live in `src/index.css`.
+- Global styles live in `src/index.css`. There is no other stylesheet.
 - `tailwind.config.js` still carries config for components that no longer exist: the
   `sidebar` color group and the `accordion-*` / `caret-blink` keyframes, plus the
   `tailwindcss-animate` plugin that nothing currently uses.
-- [README.md](README.md) is the stock Vite template readme, and [info.md](info.md) is the
-  scaffold's component inventory. Neither documents this app; don't cite them as project docs.
+- [info.md](info.md) is the scaffold's leftover component inventory: it lists 53 shadcn
+  components that no longer exist and says the project runs on Node 20, which the test suite
+  does not. Don't cite it as project documentation. [README.md](README.md) is accurate.

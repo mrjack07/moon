@@ -1,10 +1,11 @@
+import type { MoonPhase } from '@/lib/moonPhase';
+
 export type Language = 'en' | 'es';
 
-interface Translations {
-  [key: string]: string;
-}
-
-const en: Translations = {
+// `en` carries no type annotation on purpose: that is what lets TypeScript infer
+// the literal key set below. Adding one (or an index signature) would widen the
+// keys back to `string` and silently give up every check in this file.
+const en = {
   'app.title': 'Moon Phase',
   'app.documentTitle': 'Moon Phase Tracker',
   'a11y.language': 'Language',
@@ -24,7 +25,13 @@ const en: Translations = {
   'phase.waning-crescent': 'Waning Crescent',
 };
 
-const es: Translations = {
+/** Every key the UI can ask for. Derived from `en`, which is the source of truth. */
+export type TranslationKey = keyof typeof en;
+
+// Annotating `es` as a full Record is the whole point: a missing key, an extra
+// key or a misspelled one is a compile error here instead of a raw dotted string
+// rendered on screen.
+const es: Record<TranslationKey, string> = {
   'app.title': 'Fase Lunar',
   'app.documentTitle': 'Rastreador de Fases Lunares',
   'a11y.language': 'Idioma',
@@ -44,13 +51,17 @@ const es: Translations = {
   'phase.waning-crescent': 'Luna Menguante',
 };
 
-const translations: Record<Language, Translations> = { en, es };
+const translations: Record<Language, Record<TranslationKey, string>> = { en, es };
 
-export function t(key: string, lang: Language): string {
-  return translations[lang][key] || key;
+export function t(key: TranslationKey, lang: Language): string {
+  return translations[lang][key];
 }
 
-export function getPhaseName(phase: string, lang: Language): string {
-  const key = `phase.${phase}`;
-  return t(key, lang);
+/**
+ * `MoonPhase` members double as translation-key suffixes, so this stays checked:
+ * add a phase to the union without adding its `phase.*` string and the template
+ * literal below stops satisfying `TranslationKey`.
+ */
+export function getPhaseName(phase: MoonPhase, lang: Language): string {
+  return t(`phase.${phase}`, lang);
 }
